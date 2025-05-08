@@ -12,18 +12,6 @@ from data_loader.dataset import Dataset
 from data_loader.skeleton import Skeleton
 from visualization import render_animation
 
-def get_motion_shape():
-    # np.random.seed(0)
-    # actions = {'WalkDog'}
-    # dataset = DatasetH36M('train', actions=actions)
-    # generator = dataset.sampling_generator()
-    # dataset.normalize_data()
-    # generator = dataset.iter_generator()
-    # for data in generator:
-    #     print(data.shape)
-    # data = next(generator)
-    return (8, 125, 17, 3)
-
 class DatasetH36M(Dataset):
 
     def __init__(self, mode, t_his=25, t_pred=100, actions='all', use_vel=False):
@@ -34,6 +22,7 @@ class DatasetH36M(Dataset):
 
     def prepare_data(self):
         self.data_file = os.path.join('data', 'data_3d_h36m.npz')
+        # self.data_file = os.path.join('data', 'amass_retargeted.npz')
         self.subjects_split = {'train': [1, 5, 6, 7, 8],
                                'test': [9, 11]}
         self.subjects = ['S%d' % x for x in self.subjects_split[self.mode]]

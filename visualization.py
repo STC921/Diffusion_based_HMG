@@ -170,6 +170,7 @@ def render_animation(skeleton, pose, azim=0.0, bitrate=3000, output=None):
 
     # 设定颜色
     hist_lcol, hist_mcol, hist_rcol = 'purple', 'green', 'green'
+    # hist_lcol, hist_mcol, hist_rcol = 'blue', 'black', 'red'
     parents = skeleton.parents()
 
     def update_video(i):

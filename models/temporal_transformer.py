@@ -1,3 +1,5 @@
+from models.GCN import GCN_in, GCN_out
+
 import torch
 import torch.nn.functional as F
 from torch import layer_norm, nn
@@ -215,10 +217,11 @@ class TemporalDiffusionTransformerDecoderLayer(nn.Module):
         return x
 
 
-class MotionTransformer(nn.Module):
+class TemporalMotionTransformer(nn.Module):
     def __init__(self,
                  input_feats,
                  num_frames=240,
+                 joint_num=17,
                  latent_dim=512,
                  ff_size=1024,
                  num_layers=8,
@@ -241,6 +244,7 @@ class MotionTransformer(nn.Module):
 
         # Input Embedding
         self.joint_embed = nn.Linear(self.input_feats, self.latent_dim)
+        # self.joint_embed = GCN_in(self.input_feats // joint_num, latent_dim, joint_num, dropout=self.dropout)
 
         self.cond_embed = nn.Linear(self.input_feats * self.num_frames, self.time_embed_dim)
 
@@ -264,6 +268,7 @@ class MotionTransformer(nn.Module):
 
         # Output Module
         self.out = zero_module(nn.Linear(self.latent_dim, self.input_feats))
+        # self.out = zero_module(GCN_out(latent_dim, self.input_feats // joint_num, joint_num, dropout=self.dropout))
 
     def forward(self, x, timesteps, mod=None):
         """
@@ -295,3 +300,19 @@ class MotionTransformer(nn.Module):
 
         output = self.out(h).view(B, T, -1).contiguous()
         return output
+
+if __name__ == "__main__":
+    model = TemporalMotionTransformer(
+        input_feats=3 * 17,  # 3 means x, y, z
+        num_frames=240,
+        latent_dim=512,
+        ff_size=2048,
+        num_layers=8,
+        num_heads=8,
+        dropout=0.2,
+        activation="gelu",
+    )
+    x = torch.randn(16, 125, 51)
+    t = torch.randint(0, 1000, (16,))
+    out = model(x, timesteps=t)
+    print(out.shape)
