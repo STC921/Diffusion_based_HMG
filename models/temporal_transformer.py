@@ -1,11 +1,17 @@
-from models.GCN import GCN_in, GCN_out
-
 import torch
 import torch.nn.functional as F
 from torch import layer_norm, nn
 import numpy as np
 
 import math
+
+import os
+import sys
+
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(project_root)
+
+from models.GCN import SimpleEncoder, PoseGCN
 
 # from utils import *
 
@@ -97,6 +103,7 @@ class StylizationBlock(nn.Module):
             nn.Dropout(p=dropout),
             zero_module(nn.Linear(latent_dim, latent_dim)),
         )
+        
 
     def forward(self, h, emb):
         """
@@ -243,7 +250,13 @@ class TemporalMotionTransformer(nn.Module):
         self.sequence_embedding = nn.Parameter(torch.randn(num_frames, latent_dim))
 
         # Input Embedding
-        self.joint_embed = nn.Linear(self.input_feats, self.latent_dim)
+        # self.joint_embed = nn.Linear(self.input_feats, self.latent_dim)
+        self.joint_embed = SimpleEncoder(
+            n_nodes=joint_num,
+            input_features=self.input_feats // joint_num,
+            model_dim=self.latent_dim,
+            p_dropout=0
+        )
         # self.joint_embed = GCN_in(self.input_feats // joint_num, latent_dim, joint_num, dropout=self.dropout)
 
         self.cond_embed = nn.Linear(self.input_feats * self.num_frames, self.time_embed_dim)
@@ -268,7 +281,10 @@ class TemporalMotionTransformer(nn.Module):
 
         # Output Module
         self.out = zero_module(nn.Linear(self.latent_dim, self.input_feats))
-        # self.out = zero_module(GCN_out(latent_dim, self.input_feats // joint_num, joint_num, dropout=self.dropout))
+
+        out_params = filter(lambda p: p.requires_grad, self.parameters())
+        nparams = sum([np.prod(p.size()) for p in out_params])
+        print('[INFO] ({}) TemporalMotionTransformer has {} params!'.format(self.__class__.__name__, nparams))
 
     def forward(self, x, timesteps, mod=None):
         """

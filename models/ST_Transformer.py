@@ -1,8 +1,14 @@
-from models.temporal_transformer import TemporalMotionTransformer
-from models.spatial_transformer import SpatialMotionTransformer
-
 import torch
 import torch.nn as nn
+import numpy as np
+import os
+import sys
+
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(project_root)
+
+from models.temporal_transformer import TemporalMotionTransformer
+from models.spatial_transformer import SpatialMotionTransformer
 
 class MotionTransformer(nn.Module):
     def __init__(self,
@@ -50,6 +56,11 @@ class MotionTransformer(nn.Module):
             num_heads=self.num_heads,
             dropout=self.dropout,
             activation=self.activation)
+
+        t_params = filter(lambda p: p.requires_grad, self.t_model.parameters())
+        s_params = filter(lambda p: p.requires_grad, self.s_model.parameters())
+        nparams = sum([np.prod(p.size()) for p in t_params]) + sum([np.prod(p.size()) for p in s_params])
+        print('[INFO] ({}) MotionTransformer has {} params!'.format(self.__class__.__name__, nparams))
 
     def forward(self, x, timesteps=None):
         B, T, J, D = x.shape

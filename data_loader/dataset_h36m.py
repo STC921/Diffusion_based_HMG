@@ -5,6 +5,10 @@ https://github.com/wei-mao-2019/gsps/blob/main/motion_pred/utils/dataset_h36m.py
 
 import numpy as np
 import os
+import sys
+
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(project_root)
 
 import torch
 

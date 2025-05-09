@@ -2,7 +2,7 @@ import torch
 import torch.nn.functional as F
 from torch import nn
 import math
-
+import numpy as np
 
 def timestep_embedding(timesteps, dim, max_period=10000):
     """
@@ -178,6 +178,10 @@ class SpatialMotionTransformer(nn.Module):
 
         # Output Module
         self.out = zero_module(nn.Linear(self.latent_dim, self.input_feats))
+
+        out_params = filter(lambda p: p.requires_grad, self.parameters())
+        nparams = sum([np.prod(p.size()) for p in out_params])
+        print('[INFO] ({}) SpatialMotionTransformer has {} params!'.format(self.__class__.__name__, nparams))
 
     def forward(self, x, timesteps):
         """

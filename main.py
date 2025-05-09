@@ -115,9 +115,9 @@ if __name__ == '__main__':
 
     ema_model = model
 
-    # model.load_state_dict(torch.load(f'2T_{dataset_name}_model.pth'))
+    model.load_state_dict(torch.load(f'2TGCN_{dataset_name}_ema_model1.pth'))
     # ema_model.load_state_dict(torch.load(f'2T_{dataset_name}_ema_model.pth'))
-    model, ema_model = train(dataset, batch_size, model, ema_model)
+    # model, ema_model = train(dataset, batch_size, model, ema_model)
 
     print("outputing...")
     n_samples = 16

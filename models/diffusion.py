@@ -2,6 +2,13 @@ import torch
 import numpy as np
 import math
 import torch.fft
+import os
+import sys
+
+
+project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+sys.path.append(project_root)
+
 from models.ST_Transformer import MotionTransformer
 from DCT import get_dct_matrix
 # from utils import *
@@ -23,40 +30,6 @@ def cosine_beta_schedule(timesteps, s=0.008):
     alphas_cumprod = alphas_cumprod / alphas_cumprod[0]
     betas = 1 - (alphas_cumprod[1:] / alphas_cumprod[:-1])
     return torch.clip(betas, 0, 0.999)
-
-# def dct_filter(x, keep_ratio=0.9):
-#     B, T, D = x.shape
-#     x_dct = torch.fft.fft(x, dim=1)  # 对时间维度进行 DCT 变换
-#
-#     # 创建一个掩码，仅保留低频部分
-#     keep_freqs = int(T * keep_ratio)  # 计算要保留的频率数量
-#     mask = torch.zeros_like(x_dct)
-#     mask[:, :keep_freqs, :] = 1  # 仅保留低频部分
-#
-#     x_dct_filtered = x_dct * mask  # 过滤掉高频成分
-#     x_smooth = torch.fft.ifft(x_dct_filtered, dim=1).real  # 逆变换回时域，并取实部
-#
-#     return x_smooth
-
-# def dct_filter(x, keep_ratio=0.9):
-#     B, T, D = x.shape
-#     dct_m, idct_m = get_dct_matrix(T, is_torch=True)  # 获取 DCT 变换矩阵
-#
-#     dct_m = dct_m.to(x.device).to(x.dtype)
-#     idct_m = idct_m.to(x.device).to(x.dtype)
-#
-#     x_dct = torch.matmul(dct_m, x)  # 计算 DCT 变换 (B, T, D)
-#
-#     # 创建一个掩码，仅保留低频部分
-#     keep_freqs = int(T * keep_ratio)  # 计算要保留的频率数量
-#     mask = torch.zeros_like(x_dct)
-#     mask[:, :keep_freqs, :] = 1  # 仅保留低频部分
-#
-#     x_dct_filtered = x_dct * mask  # 过滤掉高频成分
-#
-#     x_smooth = torch.matmul(idct_m, x_dct_filtered)  # 逆 DCT 变换 (B, T, D)
-#
-#     return x_smooth
 
 def dct_filter(x, keep_ratio=0.9):
     """
